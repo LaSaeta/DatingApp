@@ -21,6 +21,7 @@ export class JwtInterceptor implements HttpInterceptor {
     let currentUser: User = {
       userName: '',
       token: '',
+      photoUrl: '',
     };
 
     this.accountService.currentUser

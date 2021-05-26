@@ -29,7 +29,8 @@
       *ngIf="accountService.currentUser | async as user"
       dropdown
     >
-      <a class="dropdown-toggle text-light" dropdownToggle
+      <img src="{{ user.photoUrl }}" alt="{{ user.userName }}" />
+      <a class="dropdown-toggle text-light ml-2" dropdownToggle
         >Welcome {{ user.userName | titlecase }}</a
       >
       <div class="dropdown-menu mt-3" *dropdownMenu>

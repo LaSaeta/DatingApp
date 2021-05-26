@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
     let user: User = {
       userName: '',
       token: '',
+      photoUrl: '',
     };
 
     if (userJson) {
