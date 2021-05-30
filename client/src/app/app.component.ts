@@ -23,6 +23,8 @@ export class AppComponent implements OnInit {
       userName: '',
       token: '',
       photoUrl: '',
+      gender: '',
+      knownAs: '',
     };
 
     if (userJson) {
