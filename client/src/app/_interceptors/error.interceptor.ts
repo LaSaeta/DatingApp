@@ -34,8 +34,10 @@ export class ErrorInterceptor implements HttpInterceptor {
 
                 console.log(Array.prototype.concat.apply([], modalStateErrors));
                 throw Array.prototype.concat.apply([], modalStateErrors); // could also use modalStateErrors.flat(1), using es2019
-              } else {
+              } else if (typeof response.error === 'object') {
                 this.toastr.error(response.statusText, response.status);
+              } else {
+                this.toastr.error(response.error, response.status);
               }
               break;
             case 401:
