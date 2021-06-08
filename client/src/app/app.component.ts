@@ -25,6 +25,7 @@ export class AppComponent implements OnInit {
       photoUrl: '',
       gender: '',
       knownAs: '',
+      roles: ['Member'],
     };
 
     if (userJson) {

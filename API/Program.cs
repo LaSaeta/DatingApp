@@ -1,11 +1,13 @@
-using System;
-using System.Threading.Tasks;
 using API.Data;
+using API.Entities;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace API
 {
@@ -20,13 +22,15 @@ namespace API
             try
             {
                 var context = services.GetRequiredService<DataContext>();
+                var userManager = services.GetRequiredService<UserManager<AppUser>>();
+                var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
                 await context.Database.MigrateAsync();
-                await Seed.SeedData(context);
+                await Seed.SeedData(userManager, roleManager);
             }
             catch (Exception ex)
             {
-                var logger = services.GetRequiredService<ILogger>();
-                logger.LogError(ex, "An error ocurred during migration");                
+                var logger = services.GetRequiredService<ILogger<Startup>>();
+                logger.LogError(ex, "An error ocurred during migration");
             }
 
             await host.RunAsync();
