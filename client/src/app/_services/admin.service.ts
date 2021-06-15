@@ -24,4 +24,16 @@ export class AdminService {
       {}
     );
   }
+
+  getPhotosForApproval(): Observable<any> {
+    return this.http.get(`${this.baseUrl}admin/photos-to-moderate`);
+  }
+
+  approvePhoto(photoId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}admin/approve-photo/${photoId}`, {});
+  }
+
+  rejectPhoto(photoId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}admin/reject-photo/${photoId}`, {});
+  }
 }

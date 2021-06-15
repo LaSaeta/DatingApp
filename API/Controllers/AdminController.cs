@@ -1,4 +1,5 @@
 ﻿using API.Entities;
+using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,14 @@ namespace API.Controllers
     public class AdminController : BaseApiController
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPhotoService _photoService;
 
-        public AdminController(UserManager<AppUser> userManager)
+        public AdminController(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService)
         {
             _userManager = userManager;
+            _unitOfWork = unitOfWork;
+            _photoService = photoService;
         }
 
         [Authorize(Policy = "RequireAdminRole")]
@@ -62,9 +67,59 @@ namespace API.Controllers
 
         [Authorize(Policy = "ModeratePhotoRole")]
         [HttpGet("photos-to-moderate")]
-        public ActionResult GetPhotosForModeration()
+        public async Task<ActionResult> GetPhotosForModeration()
         {
-            return Ok("Admins or moderators can see this");
+            return Ok(await _unitOfWork.PhotoRepository.GetUnapprovedPhotos());
+        }
+
+        [Authorize(Policy = "ModeratePhotoRole")]
+        [HttpPost("approve-photo/{photoId}")]
+        public async Task<ActionResult> ApprovePhoto(int photoId)
+        {
+            var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId);
+
+            if (photo == null)
+                return NotFound();
+
+            photo.IsApproved = true;
+
+            var user = await _unitOfWork.UserRepository.GetUserByPhotoId(photoId);
+
+            if (user == null)
+                return NotFound();
+
+            if (!user.Photos.Any(photo => photo.IsMain))
+                photo.IsMain = true;
+
+            if (await _unitOfWork.Complete())
+                return Ok();
+
+            return BadRequest("Failure in approving photo");
+        }
+
+        [Authorize(Policy = "ModeratePhotoRole")]
+        [HttpPost("reject-photo/{photoId}")]
+        public async Task<ActionResult> RejectPhoto(int photoId)
+        {
+            var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId);
+
+            if (photo == null)
+                return NotFound();
+
+            if (photo.PublicId != null)
+            {
+                var deletionResult = await _photoService.DeleteImageAsync(photo.PublicId);
+
+                if (deletionResult.Error != null)
+                    return BadRequest(deletionResult.Error.Message);
+            }
+
+            _unitOfWork.PhotoRepository.RemovePhoto(photo);
+
+            if (await _unitOfWork.Complete())
+                return Ok();
+
+            return BadRequest("Failure in rejecting photo");
         }
     }
 }
