@@ -37,7 +37,7 @@ namespace API.SignalR
             var group = await AddToMessageGroup(groupName);
             await Clients.Group(groupName).SendAsync("UpdatedGroup", group);
 
-            var messages = _unitOfWork.MessageRepository.GetMessageThread(Context.User.GetUserName(), otherUser);
+            var messages = await _unitOfWork.MessageRepository.GetMessageThread(Context.User.GetUserName(), otherUser);
 
             if (_unitOfWork.HasChanges())
                 await _unitOfWork.Complete();
